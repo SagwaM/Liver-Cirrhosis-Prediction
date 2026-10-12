@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block title %}Medic Dashboard{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h2>Medic Dashboard</h2>
+  <p>Patient predictions · stage breakdown · drug recommendations</p>
+</div>
+
+<!-- Top stats -->
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-icon teal"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg></div>
+    <div class="stat-info"><div class="stat-value">{{ total }}</div><div class="stat-label">Total Patients</div></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon green"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg></div>
+    <div class="stat-info"><div class="stat-value text-success">{{ alive }}</div><div class="stat-label">Alive (C)</div></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon yellow"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg></div>
+    <div class="stat-info"><div class="stat-value text-warning">{{ transplant }}</div><div class="stat-label">Transplant (CL)</div></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon red"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
+    <div class="stat-info"><div class="stat-value text-danger">{{ deceased }}</div><div class="stat-label">Deceased (D)</div></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon yellow"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg></div>
+    <div class="stat-info"><div class="stat-value text-warning">{{ reviews }}</div><div class="stat-label">Flagged for Review</div></div>
+  </div>
+</div>
+
+<!-- Stage breakdown cards -->
+<h3 style="font-size:13px;font-weight:600;color:var(--gray-400);text-transform:uppercase;letter-spacing:.05em;margin-bottom:14px">Stage Breakdown</h3>
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px">
+  {% for s_num, s_info in stage_stats.items() %}
+  <a href="{{ url_for('medic.stage_view', stage_num=s_num) }}" style="text-decoration:none">
+    <div class="card mb-0" style="cursor:pointer;transition:border-color .15s;border-color:{% if s_info.color == 'success' %}rgba(52,211,153,.3){% elif s_info.color == 'warning' %}rgba(251,191,36,.3){% elif s_info.color == 'orange' %}rgba(249,115,22,.3){% else %}rgba(239,68,68,.3){% endif %}">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <span class="badge stage-{{ s_num }}">Stage {{ s_num }}</span>
+        <span style="font-size:11px;color:var(--gray-400)">{{ s_info.label }}</span>
+      </div>
+      <div style="font-size:26px;font-weight:700;margin-bottom:6px">{{ s_info.total }}</div>
+      <div style="font-size:11px;color:var(--gray-400)">patients</div>
+      <div style="margin-top:10px;display:flex;gap:8px;font-size:11px">
+        <span style="color:#6ee7b7">{{ s_info.alive }} alive</span>
+        <span style="color:#fca5a5">{{ s_info.deceased }} deceased</span>
+      </div>
+      <div style="margin-top:8px;height:4px;background:var(--navy-600);border-radius:2px;overflow:hidden">
+        {% if s_info.total > 0 %}
+        <div style="width:{{ (s_info.alive / s_info.total * 100)|round }}%;height:100%;background:#10b981;border-radius:2px"></div>
+        {% endif %}
+      </div>
+    </div>
+  </a>
+  {% endfor %}
+</div>
+
+<!-- Flagged cases -->
+{% if flagged %}
+<div class="card">
+  <div class="card-header">
+    <span class="card-title" style="color:var(--yellow)">⚠ Cases requiring review</span>
+    <a href="{{ url_for('medic.patients') }}?flag=REVIEW" class="btn btn-secondary btn-sm">View all</a>
+  </div>
+  <div class="table-wrapper">
+    <table>
+      <thead><tr><th>Patient</th><th>Stage</th><th>Predicted Outcome</th><th>Confidence</th><th>Submitted by</th><th>Action</th></tr></thead>
+      <tbody>
+      {% for p in flagged %}
+        <tr>
+          <td><strong>{{ p.patient_name }}</strong></td>
+          <td><span class="badge stage-{{ p.stage }}">Stage {{ p.stage }}</span></td>
+          <td>{% if p.prediction %}<span class="badge badge-{% if p.prediction.predicted_status == 'C' %}success{% elif p.prediction.predicted_status == 'CL' %}warning{% else %}danger{% endif %}">{{ p.prediction.predicted_outcome }}</span>{% endif %}</td>
+          <td><span class="badge badge-review">{{ (p.prediction.confidence * 100)|round(1) }}% — REVIEW</span></td>
+          <td class="text-muted">{% if p.prediction and p.prediction.reviewed_by %}{{ p.prediction.reviewed_by }}{% elif p.submitter %}{{ p.submitter.username }}{% else %}—{% endif %}</td>
+          <td><a href="{{ url_for('medic.patient_detail', patient_id=p.id) }}" class="btn btn-primary btn-sm">View</a></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+<!-- Recent patients -->
+<div class="card">
+  <div class="card-header">
+    <span class="card-title">Recent patients</span>
+    <div class="flex gap-8">
+      <a href="{{ url_for('medic.summary') }}" class="btn btn-primary btn-sm">All Stages Summary</a>
+      <a href="{{ url_for('medic.patients') }}" class="btn btn-secondary btn-sm">View all</a>
+    </div>
+  </div>
+  <div class="table-wrapper">
+    <table>
+      <thead><tr><th>Patient</th><th>Age</th><th>Stage</th><th>Predicted Outcome</th><th>Confidence</th><th>Flag</th><th>Submitted by</th><th>Action</th></tr></thead>
+      <tbody>
+      {% for p in recent %}
+        <tr>
+          <td><strong>{{ p.patient_name }}</strong></td>
+          <td>{{ p.age }}y</td>
+          <td><span class="badge stage-{{ p.stage }}">Stage {{ p.stage }}</span></td>
+          <td>{% if p.prediction %}<span class="badge badge-{% if p.prediction.predicted_status == 'C' %}success{% elif p.prediction.predicted_status == 'CL' %}warning{% else %}danger{% endif %}">{{ p.prediction.predicted_outcome }}</span>{% endif %}</td>
+          <td>{% if p.prediction %}{{ (p.prediction.confidence * 100)|round(1) }}%{% endif %}</td>
+          <td>{% if p.prediction %}{% if p.prediction.confidence_flag == 'REVIEW' %}<span class="badge badge-review">REVIEW</span>{% else %}<span class="badge badge-success">OK</span>{% endif %}{% endif %}</td>
+          <td class="text-muted">{% if p.prediction and p.prediction.reviewed_by %}{{ p.prediction.reviewed_by }}{% elif p.submitter %}{{ p.submitter.username }}{% else %}—{% endif %}</td>
+          <td><a href="{{ url_for('medic.patient_detail', patient_id=p.id) }}" class="btn btn-secondary btn-sm">View</a></td>
+        </tr>
+      {% else %}
+        <tr><td colspan="8" class="text-center text-muted" style="padding:32px">No patients yet.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

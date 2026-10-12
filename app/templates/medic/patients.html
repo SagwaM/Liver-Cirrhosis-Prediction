@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% block title %}All Patients — Medic{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <h2>All Patients</h2>
+  <p>{{ patients|length }} record(s) — filter by outcome or flag below</p>
+</div>
+
+<!-- Filter tabs -->
+<div class="card" style="margin-bottom:16px;padding:14px 16px">
+  <div class="flex gap-8">
+    <a href="{{ url_for('medic.patients') }}"
+       class="btn btn-sm {% if not active_flag %}btn-primary{% else %}btn-secondary{% endif %}">
+      All
+    </a>
+    <a href="{{ url_for('medic.patients') }}?flag=C"
+       class="btn btn-sm {% if active_flag == 'C' %}btn-primary{% else %}btn-secondary{% endif %}">
+      Alive (C)
+    </a>
+    <a href="{{ url_for('medic.patients') }}?flag=CL"
+       class="btn btn-sm {% if active_flag == 'CL' %}btn-primary{% else %}btn-secondary{% endif %}">
+      Transplant (CL)
+    </a>
+    <a href="{{ url_for('medic.patients') }}?flag=D"
+       class="btn btn-sm {% if active_flag == 'D' %}btn-primary{% else %}btn-secondary{% endif %}">
+      Deceased (D)
+    </a>
+    <a href="{{ url_for('medic.patients') }}?flag=REVIEW"
+       class="btn btn-sm {% if active_flag == 'REVIEW' %}btn-primary{% else %}btn-secondary{% endif %}">
+      ⚠ Needs Review
+    </a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Patient</th>
+          <th>Age</th>
+          <th>Sex</th>
+          <th>Stage</th>
+          <th>Predicted Outcome</th>
+          <th>Confidence</th>
+          <th>Flag</th>
+          <th>Submitted By</th>
+          <th>Date</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in patients %}
+        <tr>
+          <td><strong>{{ p.patient_name }}</strong></td>
+          <td>{{ p.age }}y</td>
+          <td>{{ p.sex }}</td>
+          <td><span class="badge stage-{{ p.stage }}">Stage {{ p.stage }}</span></td>
+          <td>
+            {% if p.prediction %}
+              {% if p.prediction.predicted_status == 'C' %}
+                <span class="badge badge-success">{{ p.prediction.predicted_outcome }}</span>
+              {% elif p.prediction.predicted_status == 'CL' %}
+                <span class="badge badge-warning">{{ p.prediction.predicted_outcome }}</span>
+              {% else %}
+                <span class="badge badge-danger">{{ p.prediction.predicted_outcome }}</span>
+              {% endif %}
+            {% else %}
+              <span class="text-muted">—</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if p.prediction %}
+              {{ (p.prediction.confidence * 100)|round(1) }}%
+            {% else %}—{% endif %}
+          </td>
+          <td>
+            {% if p.prediction %}
+              {% if p.prediction.confidence_flag == 'REVIEW' %}
+                <span class="badge badge-review">REVIEW</span>
+              {% else %}
+                <span class="badge badge-success">OK</span>
+              {% endif %}
+            {% endif %}
+          </td>
+          <td class="text-muted">
+            {{ p.submitter.username if p.submitter else '—' }}
+          </td>
+          <td class="text-muted">{{ p.submitted_at.strftime('%d %b %Y') }}</td>
+          <td>
+            <!-- Medic uses its own detail route -->
+            <a href="{{ url_for('medic.patient_detail', patient_id=p.id) }}"
+               class="btn btn-secondary btn-sm">View</a>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="10" class="text-center text-muted" style="padding:32px">
+            No patients match this filter.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

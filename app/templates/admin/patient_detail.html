@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% block title %}{{ patient.patient_name }} — Admin View{% endblock %}
+{% block content %}
+
+<div class="page-header flex justify-between items-center">
+  <div>
+    <h2>{{ patient.patient_name }}</h2>
+    <p>
+      {{ patient.age }} years · {{ patient.sex }} ·
+      Submitted by <strong>{{ patient.submitter.username if patient.submitter else '—' }}</strong>
+      on {{ patient.submitted_at.strftime('%d %b %Y %H:%M') }}
+    </p>
+  </div>
+  <a href="{{ url_for('admin.patients') }}" class="btn btn-secondary">← Back</a>
+</div>
+
+<div class="grid-2">
+  <!-- Prediction summary -->
+  <div class="card mb-0">
+    <div class="card-header"><span class="card-title">Prediction Result</span></div>
+    {% if prediction %}
+    <div style="margin-bottom:16px">
+      <div class="text-muted" style="font-size:11px;text-transform:uppercase;
+           letter-spacing:.05em;margin-bottom:6px">Predicted Outcome</div>
+      <span class="badge badge-{% if prediction.predicted_status == 'C' %}success
+        {% elif prediction.predicted_status == 'CL' %}warning{% else %}danger{% endif %}"
+        style="font-size:15px;padding:6px 16px">
+        {{ prediction.predicted_outcome }}
+      </span>
+    </div>
+    <div style="margin-bottom:14px">
+      <div class="text-muted" style="font-size:11px;text-transform:uppercase;
+           letter-spacing:.05em;margin-bottom:6px">Confidence</div>
+      <div style="font-size:28px;font-weight:700;
+        color:{% if prediction.confidence >= 0.75 %}#6ee7b7{% elif prediction.confidence >= 0.60 %}#fcd34d{% else %}#fca5a5{% endif %}">
+        {{ (prediction.confidence * 100)|round(1) }}%
+      </div>
+    </div>
+    <div>
+      <div class="text-muted" style="font-size:11px;text-transform:uppercase;
+           letter-spacing:.05em;margin-bottom:6px">Confidence Flag</div>
+      {% if prediction.confidence_flag == 'REVIEW' %}
+        <span class="badge badge-review">⚠ REVIEW REQUIRED</span>
+      {% else %}
+        <span class="badge badge-success">OK</span>
+      {% endif %}
+    </div>
+    {% else %}
+    <p class="text-muted">No prediction available.</p>
+    {% endif %}
+  </div>
+
+  <!-- Lab values -->
+  <div class="card mb-0">
+    <div class="card-header"><span class="card-title">Lab Values Submitted</span></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      {% for label, value in [
+          ('Disease Stage',   'Stage ' ~ patient.stage),
+          ('Bilirubin (mg/dL)', patient.bilirubin),
+          ('Prothrombin (s)',  patient.prothrombin),
+          ('Copper (µg/day)', patient.copper),
+          ('SGOT (U/mL)',     patient.sgot),
+          ('Hepatomegaly',    'Yes' if patient.hepatomegaly else 'No'),
+          ('Spider Angiomata','Yes' if patient.spiders else 'No'),
+      ] %}
+      <div style="background:var(--navy-800);border:1px solid var(--navy-600);
+                  border-radius:8px;padding:12px">
+        <div style="font-size:11px;color:var(--gray-400);text-transform:uppercase;
+                    letter-spacing:.04em;margin-bottom:4px">{{ label }}</div>
+        <div style="font-size:16px;font-weight:600">{{ value }}</div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+{% if prediction %}
+<!-- Probability breakdown -->
+<div class="card">
+  <div class="card-header"><span class="card-title">Probability Breakdown</span></div>
+  <div class="prob-bar-wrap">
+    <div class="prob-bar-label">
+      <span>Alive / Censored (C)</span>
+      <strong>{{ (prediction.prob_alive * 100)|round(1) }}%</strong>
+    </div>
+    <div class="prob-bar-bg">
+      <div class="prob-bar alive" style="width:{{ (prediction.prob_alive * 100)|round(1) }}%"></div>
+    </div>
+  </div>
+  <div class="prob-bar-wrap">
+    <div class="prob-bar-label">
+      <span>Liver Transplant (CL)</span>
+      <strong>{{ (prediction.prob_transplant * 100)|round(1) }}%</strong>
+    </div>
+    <div class="prob-bar-bg">
+      <div class="prob-bar transplant" style="width:{{ (prediction.prob_transplant * 100)|round(1) }}%"></div>
+    </div>
+  </div>
+  <div class="prob-bar-wrap mb-0">
+    <div class="prob-bar-label">
+      <span>Deceased (D)</span>
+      <strong>{{ (prediction.prob_deceased * 100)|round(1) }}%</strong>
+    </div>
+    <div class="prob-bar-bg">
+      <div class="prob-bar deceased" style="width:{{ (prediction.prob_deceased * 100)|round(1) }}%"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Drug recommendation -->
+<div class="card">
+  <div class="card-header">
+    <span class="card-title">Drug Recommendation — Stage {{ patient.stage }}</span>
+  </div>
+  <div class="drug-box">
+    <div class="drug-box-title">Primary Treatment</div>
+    <p>{{ prediction.primary_drug }}</p>
+  </div>
+  <div class="drug-box">
+    <div class="drug-box-title">Secondary / Supportive</div>
+    <p>{{ prediction.secondary_drug }}</p>
+  </div>
+  <div class="drug-box">
+    <div class="drug-box-title">Monitoring Protocol</div>
+    <p>{{ prediction.monitoring }}</p>
+  </div>
+  <div class="drug-box {% if patient.stage == 4 %}danger{% elif patient.stage == 3 %}warning{% endif %}">
+    <div class="drug-box-title">Clinical Note</div>
+    <p>{{ prediction.clinical_note }}</p>
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}

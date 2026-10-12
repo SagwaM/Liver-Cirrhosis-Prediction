@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}All Patients — Admin{% endblock %}
+{% block content %}
+
+<div class="page-header flex justify-between items-center">
+  <div>
+    <h2>All Patients</h2>
+    <p>{{ patients|length }} total records across all lab technicians</p>
+  </div>
+  <a href="{{ url_for('admin.export_csv') }}" class="btn btn-primary">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:15px;height:15px">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+    </svg>
+    Export CSV
+  </a>
+</div>
+
+<div class="card">
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Patient</th>
+          <th>Age</th>
+          <th>Sex</th>
+          <th>Stage</th>
+          <th>Bilirubin</th>
+          <th>Prothrombin</th>
+          <th>Submitted By</th>
+          <th>Predicted Outcome</th>
+          <th>Confidence</th>
+          <th>Flag</th>
+          <th>Date</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in patients %}
+        <tr>
+          <td><strong>{{ p.patient_name }}</strong></td>
+          <td>{{ p.age }}y</td>
+          <td>{{ p.sex }}</td>
+          <td><span class="badge stage-{{ p.stage }}">Stage {{ p.stage }}</span></td>
+          <td>{{ p.bilirubin }}</td>
+          <td>{{ p.prothrombin }}</td>
+          <td class="text-muted">
+            {{ p.submitter.username if p.submitter else '—' }}
+          </td>
+          <td>
+            {% if p.prediction %}
+              {% if p.prediction.predicted_status == 'C' %}
+                <span class="badge badge-success">{{ p.prediction.predicted_outcome }}</span>
+              {% elif p.prediction.predicted_status == 'CL' %}
+                <span class="badge badge-warning">{{ p.prediction.predicted_outcome }}</span>
+              {% else %}
+                <span class="badge badge-danger">{{ p.prediction.predicted_outcome }}</span>
+              {% endif %}
+            {% else %}
+              <span class="text-muted">—</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if p.prediction %}
+              {{ (p.prediction.confidence * 100)|round(1) }}%
+            {% else %}—{% endif %}
+          </td>
+          <td>
+            {% if p.prediction %}
+              {% if p.prediction.confidence_flag == 'REVIEW' %}
+                <span class="badge badge-review">REVIEW</span>
+              {% else %}
+                <span class="badge badge-success">OK</span>
+              {% endif %}
+            {% endif %}
+          </td>
+          <td class="text-muted">{{ p.submitted_at.strftime('%d %b %Y') }}</td>
+          <td>
+            <!-- Admin uses its own detail view, not the medic route -->
+            <a href="{{ url_for('admin.patient_detail', patient_id=p.id) }}"
+               class="btn btn-secondary btn-sm">View</a>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="12" class="text-center text-muted" style="padding:32px">
+            No patients submitted yet.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

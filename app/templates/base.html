@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}CirrhosisPredicator{% endblock %} - Liver Cirrhosis Prediction</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<div class="layout">
+
+  <!-- ── Sidebar ───────────────────────────────────────────── -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <h1>CirrhosisPredicator</h1>
+      <p>Prediction System</p>
+    </div>
+
+    <nav class="sidebar-nav">
+      {% if current_user.role == 'admin' %}
+        <div class="nav-section-label">Admin</div>
+        <a href="{{ url_for('admin.admin_dashboard') }}"
+           class="nav-link {% if request.endpoint == 'admin.admin_dashboard' %}active{% endif %}">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+          Dashboard
+        </a>
+        <a href="{{ url_for('admin.patients') }}"
+           class="nav-link {% if request.endpoint == 'admin.patients' %}active{% endif %}">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+          All Patients
+        </a>
+        <a href="{{ url_for('admin.users') }}"
+           class="nav-link {% if request.endpoint in ['admin.users','admin.add_user'] %}active{% endif %}">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+          Manage Users
+        </a>
+        <a href="{{ url_for('admin.export_csv') }}" class="nav-link">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+          Export CSV
+        </a>
+
+      {% elif current_user.role == 'lab' %}
+        <div class="nav-section-label">Lab Technician</div>
+        <a href="{{ url_for('lab.lab_dashboard') }}"
+           class="nav-link {% if request.endpoint == 'lab.lab_dashboard' %}active{% endif %}">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+          Dashboard
+        </a>
+        <a href="{{ url_for('lab.submit') }}"
+           class="nav-link {% if request.endpoint == 'lab.submit' %}active{% endif %}">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          Submit Patient
+        </a>
+
+      {% elif current_user.role == 'medic' %}
+        <div class="nav-section-label">Medic</div>
+        <a href="{{ url_for('medic.medic_dashboard') }}"
+           class="nav-link {% if request.endpoint == 'medic.medic_dashboard' %}active{% endif %}">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+          Dashboard
+        </a>
+        <a href="{{ url_for('medic.patients') }}"
+           class="nav-link {% if request.endpoint == 'medic.patients' %}active{% endif %}">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+          All Patients
+        </a>
+        <a href="{{ url_for('medic.patients') }}?flag=REVIEW"
+           class="nav-link {% if request.endpoint == 'medic.patients' and request.args.get('flag') == 'REVIEW' %}active{% endif %}">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+          Flagged Cases
+        </a>
+        <a href="{{ url_for('medic.summary') }}"
+           class="nav-link {% if request.endpoint == 'medic.summary' %}active{% endif %}">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          All Stages Summary
+        </a>
+        <div class="nav-section-label">By Stage</div>
+        {% for stage_num, stage_name in [(1,'Early'),(2,'Moderate'),(3,'Advanced'),(4,'End-stage')] %}
+        <a href="{{ url_for('medic.stage_view', stage_num=stage_num) }}"
+           class="nav-link {% if request.endpoint == 'medic.stage_view' and request.view_args.get('stage_num') == stage_num %}active{% endif %}">
+          <span style="width:16px;height:16px;border-radius:4px;flex-shrink:0;display:inline-block;
+            background:{% if stage_num==1 %}rgba(52,211,153,.3){% elif stage_num==2 %}rgba(251,191,36,.3){% elif stage_num==3 %}rgba(249,115,22,.3){% else %}rgba(239,68,68,.3){% endif %}">
+          </span>
+          Stage {{ stage_num }} — {{ stage_name }}
+        </a>
+        {% endfor %}
+      {% endif %}
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <strong>{{ current_user.username }}</strong>
+        <span class="role-badge">{{ current_user.role | capitalize }}</span>
+      </div>
+      <a href="{{ url_for('auth.logout') }}" class="btn btn-secondary btn-sm" style="width:100%;justify-content:center;">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:14px;height:14px"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+        Log out
+      </a>
+    </div>
+  </aside>
+
+  <!-- ── Main content ───────────────────────────────────────── -->
+  <main class="main-content">
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}">
+            <span>{{ message }}</span>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+  </main>
+</div>
+</body>
+</html>

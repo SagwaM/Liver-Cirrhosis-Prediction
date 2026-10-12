@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% block title %}Stage {{ stage_num }} — {{ label }}{% endblock %}
+{% block content %}
+
+<div class="page-header flex justify-between items-center">
+  <div>
+    <h2>Stage {{ stage_num }} — {{ label }}</h2>
+    <p>All patients at this stage · survival predictions · drug recommendation</p>
+  </div>
+  <a href="{{ url_for('medic.medic_dashboard') }}" class="btn btn-secondary">← Dashboard</a>
+</div>
+
+<!-- Stage stats -->
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-icon teal"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg></div>
+    <div class="stat-info"><div class="stat-value">{{ total }}</div><div class="stat-label">Total Patients</div></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon green"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg></div>
+    <div class="stat-info"><div class="stat-value text-success">{{ alive }}</div><div class="stat-label">Predicted Alive (C)</div></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon red"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
+    <div class="stat-info"><div class="stat-value text-danger">{{ deceased }}</div><div class="stat-label">Predicted Deceased (D)</div></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon yellow"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg></div>
+    <div class="stat-info"><div class="stat-value text-warning">{{ reviews }}</div><div class="stat-label">Flagged for Review</div></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon teal"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg></div>
+    <div class="stat-info"><div class="stat-value">{{ avg_conf }}%</div><div class="stat-label">Avg Confidence</div></div>
+  </div>
+</div>
+
+<!-- Drug recommendation for this stage -->
+<div class="card">
+  <div class="card-header">
+    <span class="card-title">Drug Recommendation — Stage {{ stage_num }} ({{ label }})</span>
+    <span class="badge stage-{{ stage_num }}">All patients at this stage</span>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+    <div class="drug-box">
+      <div class="drug-box-title">Primary Treatment</div>
+      <p>{{ drug_rec.primary }}</p>
+    </div>
+    <div class="drug-box">
+      <div class="drug-box-title">Secondary / Supportive</div>
+      <p>{{ drug_rec.secondary }}</p>
+    </div>
+    <div class="drug-box">
+      <div class="drug-box-title">Monitoring Protocol</div>
+      <p>{{ drug_rec.monitoring }}</p>
+    </div>
+    <div class="drug-box {% if stage_num == 4 %}danger{% elif stage_num == 3 %}warning{% endif %}">
+      <div class="drug-box-title">Treatment Goal</div>
+      <p>{{ drug_rec.goal }}</p>
+    </div>
+  </div>
+</div>
+
+<!-- Patient list at this stage -->
+<div class="card">
+  <div class="card-header">
+    <span class="card-title">Patients — Stage {{ stage_num }}</span>
+    <span class="text-muted" style="font-size:12px">{{ total }} patients</span>
+  </div>
+  {% if patients %}
+  <div class="table-wrapper">
+    <table>
+      <thead><tr>
+        <th>Patient</th><th>Age</th><th>Sex</th>
+        <th>Bilirubin</th><th>Prothrombin</th><th>Copper</th>
+        <th>Predicted Outcome</th><th>Confidence</th><th>Flag</th>
+        <th>Submitted by</th><th>Action</th>
+      </tr></thead>
+      <tbody>
+      {% for p in patients %}
+        <tr>
+          <td><strong>{{ p.patient_name }}</strong></td>
+          <td>{{ p.age }}y</td>
+          <td>{{ p.sex }}</td>
+          <td>{{ p.bilirubin }}</td>
+          <td>{{ p.prothrombin }}</td>
+          <td>{{ p.copper }}</td>
+          <td>
+            {% if p.prediction %}
+              {% if p.prediction.predicted_status == 'C' %}
+                <span class="badge badge-success">{{ p.prediction.predicted_outcome }}</span>
+              {% elif p.prediction.predicted_status == 'CL' %}
+                <span class="badge badge-warning">{{ p.prediction.predicted_outcome }}</span>
+              {% else %}
+                <span class="badge badge-danger">{{ p.prediction.predicted_outcome }}</span>
+              {% endif %}
+            {% endif %}
+          </td>
+          <td>{% if p.prediction %}{{ (p.prediction.confidence * 100)|round(1) }}%{% endif %}</td>
+          <td>
+            {% if p.prediction %}
+              {% if p.prediction.confidence_flag == 'REVIEW' %}
+                <span class="badge badge-review">REVIEW</span>
+              {% else %}
+                <span class="badge badge-success">OK</span>
+              {% endif %}
+            {% endif %}
+          </td>
+          <td class="text-muted">
+            {% if p.prediction and p.prediction.reviewed_by %}
+              {{ p.prediction.reviewed_by }}
+            {% elif p.submitter %}
+              {{ p.submitter.username }}
+            {% else %}—{% endif %}
+          </td>
+          <td><a href="{{ url_for('medic.patient_detail', patient_id=p.id) }}" class="btn btn-secondary btn-sm">View</a></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="text-center text-muted" style="padding:40px">
+    No patients at Stage {{ stage_num }} yet.
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

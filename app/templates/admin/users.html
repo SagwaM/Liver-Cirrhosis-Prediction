@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Manage Users{% endblock %}
+{% block content %}
+<div class="page-header flex justify-between items-center">
+  <div><h2>Manage Users</h2><p>{{ users|length }} users in the system</p></div>
+  <a href="{{ url_for('admin.add_user') }}" class="btn btn-primary">Add User</a>
+</div>
+<div class="card">
+  <div class="table-wrapper">
+    <table>
+      <thead><tr><th>Username</th><th>Role</th><th>Status</th><th>Created</th><th>Action</th></tr></thead>
+      <tbody>
+      {% for u in users %}
+        <tr>
+          <td><strong>{{ u.username }}</strong></td>
+          <td>
+            {% if u.role == 'admin' %}<span class="badge badge-info">Admin</span>
+            {% elif u.role == 'lab' %}<span class="badge badge-success">Lab Tech</span>
+            {% else %}<span class="badge badge-warning">Medic</span>{% endif %}
+          </td>
+          <td>{% if u.is_active %}<span class="badge badge-success">Active</span>{% else %}<span class="badge badge-danger">Inactive</span>{% endif %}</td>
+          <td class="text-muted">{{ u.created_at.strftime('%d %b %Y') }}</td>
+          <td>
+            {% if u.id != current_user.id %}
+              <a href="{{ url_for('admin.toggle_user', user_id=u.id) }}"
+                 class="btn btn-sm {% if u.is_active %}btn-danger{% else %}btn-secondary{% endif %}">
+                {% if u.is_active %}Deactivate{% else %}Activate{% endif %}
+              </a>
+            {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

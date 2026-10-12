@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% block title %}Lab Technician Dashboard{% endblock %}
+{% block content %}
+
+<div class="page-header flex justify-between items-center">
+  <div>
+    <h2>Lab Technician Dashboard</h2>
+    <p>Welcome, {{ current_user.username }} — submit patient lab values for prediction</p>
+  </div>
+  <a href="{{ url_for('lab.submit') }}" class="btn btn-primary">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:15px;height:15px">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+    </svg>
+    New Patient
+  </a>
+</div>
+
+<!-- Stats -->
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-icon teal">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857
+             M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857
+             m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+      </svg>
+    </div>
+    <div class="stat-info">
+      <div class="stat-value">{{ total }}</div>
+      <div class="stat-label">Patients Submitted</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon green">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+    </div>
+    <div class="stat-info">
+      <div class="stat-value text-success">{{ total }}</div>
+      <div class="stat-label">Predictions Ready</div>
+    </div>
+  </div>
+</div>
+
+<!-- How it works -->
+<div class="card" style="border-color:rgba(13,148,136,.3);background:rgba(13,148,136,.05);margin-bottom:24px">
+  <div style="display:flex;gap:32px">
+    <div style="text-align:center;flex:1">
+      <div style="width:36px;height:36px;border-radius:50%;background:rgba(13,148,136,.2);
+                  color:var(--teal-300);display:flex;align-items:center;justify-content:center;
+                  font-weight:700;font-size:14px;margin:0 auto 8px">1</div>
+      <div style="font-size:12px;font-weight:600;margin-bottom:4px">Enter Lab Values</div>
+      <div style="font-size:11px;color:var(--gray-400)">Fill in the patient form with all required measurements</div>
+    </div>
+    <div style="display:flex;align-items:center;color:var(--navy-500);font-size:20px">→</div>
+    <div style="text-align:center;flex:1">
+      <div style="width:36px;height:36px;border-radius:50%;background:rgba(13,148,136,.2);
+                  color:var(--teal-300);display:flex;align-items:center;justify-content:center;
+                  font-weight:700;font-size:14px;margin:0 auto 8px">2</div>
+      <div style="font-size:12px;font-weight:600;margin-bottom:4px">Submit</div>
+      <div style="font-size:11px;color:var(--gray-400)">The model runs instantly in the background</div>
+    </div>
+    <div style="display:flex;align-items:center;color:var(--navy-500);font-size:20px">→</div>
+    <div style="text-align:center;flex:1">
+      <div style="width:36px;height:36px;border-radius:50%;background:rgba(13,148,136,.2);
+                  color:var(--teal-300);display:flex;align-items:center;justify-content:center;
+                  font-weight:700;font-size:14px;margin:0 auto 8px">3</div>
+      <div style="font-size:12px;font-weight:600;margin-bottom:4px">Medic Reviews</div>
+      <div style="font-size:11px;color:var(--gray-400)">The medic sees the prediction and drug recommendation</div>
+    </div>
+  </div>
+</div>
+
+<!-- Recent submissions -->
+<div class="card">
+  <div class="card-header">
+    <span class="card-title">My recent submissions</span>
+    <a href="{{ url_for('lab.submit') }}" class="btn btn-secondary btn-sm">+ Submit new</a>
+  </div>
+
+  {% if recent_patients %}
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Patient Name</th>
+          <th>Age</th>
+          <th>Sex</th>
+          <th>Stage</th>
+          <th>Bilirubin</th>
+          <th>Prothrombin</th>
+          <th>Submitted At</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in recent_patients %}
+        <tr>
+          <td><strong>{{ p.patient_name }}</strong></td>
+          <td>{{ p.age }}y</td>
+          <td>{{ p.sex }}</td>
+          <td><span class="badge stage-{{ p.stage }}">Stage {{ p.stage }}</span></td>
+          <td>{{ p.bilirubin }}</td>
+          <td>{{ p.prothrombin }}</td>
+          <td class="text-muted">{{ p.submitted_at.strftime('%d %b %Y  %H:%M') }}</td>
+          <td>
+            {% if p.prediction %}
+              <span class="badge badge-success">✓ Prediction ready</span>
+            {% else %}
+              <span class="badge badge-warning">Processing…</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="text-center text-muted" style="padding:48px 32px">
+    <div style="font-size:32px;margin-bottom:12px">🔬</div>
+    <div style="font-weight:600;margin-bottom:6px">No submissions yet</div>
+    <div style="font-size:12px;margin-bottom:20px">Submit your first patient to get started</div>
+    <a href="{{ url_for('lab.submit') }}" class="btn btn-primary">Submit Patient</a>
+  </div>
+  {% endif %}
+</div>
+
+{% endblock %}

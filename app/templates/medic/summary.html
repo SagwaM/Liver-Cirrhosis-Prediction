@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block title %}All Stages Summary{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <h2>Consolidated Stage Summary</h2>
+  <p>All stages · survival predictions · drug recommendations in one view</p>
+</div>
+
+{% for s in stage_data %}
+<div class="card" style="border-left: 4px solid var(--{% if s.color == 'success' %}teal-400{% elif s.color == 'warning' %}yellow{% elif s.color == 'orange' %}orange{% else %}red{% endif %})">
+
+  <!-- Stage header -->
+  <div class="card-header">
+    <div class="flex items-center gap-8">
+      <span class="badge stage-{{ s.stage }}" style="font-size:13px;padding:5px 14px">
+        Stage {{ s.stage }} — {{ s.label }}
+      </span>
+      <span class="text-muted" style="font-size:12px">{{ s.total }} patients</span>
+    </div>
+    <a href="{{ url_for('medic.stage_view', stage_num=s.stage) }}" class="btn btn-secondary btn-sm">
+      View all Stage {{ s.stage }} →
+    </a>
+  </div>
+
+  <!-- Stats row -->
+  <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:18px">
+    <div style="text-align:center;padding:12px;background:var(--navy-800);border-radius:8px;border:1px solid var(--navy-600)">
+      <div style="font-size:22px;font-weight:700">{{ s.total }}</div>
+      <div style="font-size:11px;color:var(--gray-400)">Total</div>
+    </div>
+    <div style="text-align:center;padding:12px;background:rgba(16,185,129,.08);border-radius:8px;border:1px solid rgba(16,185,129,.2)">
+      <div style="font-size:22px;font-weight:700;color:#6ee7b7">{{ s.alive }}</div>
+      <div style="font-size:11px;color:var(--gray-400)">Alive (C)</div>
+    </div>
+    <div style="text-align:center;padding:12px;background:rgba(239,68,68,.08);border-radius:8px;border:1px solid rgba(239,68,68,.2)">
+      <div style="font-size:22px;font-weight:700;color:#fca5a5">{{ s.deceased }}</div>
+      <div style="font-size:11px;color:var(--gray-400)">Deceased (D)</div>
+    </div>
+    <div style="text-align:center;padding:12px;background:rgba(245,158,11,.08);border-radius:8px;border:1px solid rgba(245,158,11,.2)">
+      <div style="font-size:22px;font-weight:700;color:#fcd34d">{{ s.transplant }}</div>
+      <div style="font-size:11px;color:var(--gray-400)">Transplant (CL)</div>
+    </div>
+    <div style="text-align:center;padding:12px;background:var(--navy-800);border-radius:8px;border:1px solid var(--navy-600)">
+      <div style="font-size:22px;font-weight:700;color:var(--teal-300)">{{ s.survival_rate }}%</div>
+      <div style="font-size:11px;color:var(--gray-400)">Survival Rate</div>
+    </div>
+  </div>
+
+  <!-- Survival bar -->
+  {% if s.total > 0 %}
+  <div style="margin-bottom:18px">
+    <div style="font-size:11px;color:var(--gray-400);margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em">Outcome breakdown</div>
+    <div style="display:flex;height:10px;border-radius:5px;overflow:hidden;gap:2px">
+      {% if s.alive > 0 %}
+      <div style="flex:{{ s.alive }};background:#10b981" title="Alive: {{ s.alive }}"></div>
+      {% endif %}
+      {% if s.transplant > 0 %}
+      <div style="flex:{{ s.transplant }};background:#f59e0b" title="Transplant: {{ s.transplant }}"></div>
+      {% endif %}
+      {% if s.deceased > 0 %}
+      <div style="flex:{{ s.deceased }};background:#ef4444" title="Deceased: {{ s.deceased }}"></div>
+      {% endif %}
+    </div>
+    <div style="display:flex;gap:16px;margin-top:6px;font-size:11px;color:var(--gray-400)">
+      <span style="color:#6ee7b7">■ Alive</span>
+      <span style="color:#fcd34d">■ Transplant</span>
+      <span style="color:#fca5a5">■ Deceased</span>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Drug recommendation -->
+  <div style="background:var(--navy-800);border-radius:8px;padding:14px 16px;border:1px solid var(--navy-600)">
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--teal-300);margin-bottom:10px">
+      Drug Recommendation
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:12px">
+      <div><span style="color:var(--gray-400)">Primary:</span><br>{{ s.drug_rec.primary }}</div>
+      <div><span style="color:var(--gray-400)">Secondary:</span><br>{{ s.drug_rec.secondary }}</div>
+      <div><span style="color:var(--gray-400)">Monitoring:</span><br>{{ s.drug_rec.monitoring }}</div>
+      <div><span style="color:var(--gray-400)">Goal:</span><br>{{ s.drug_rec.goal }}</div>
+    </div>
+  </div>
+
+</div>
+{% endfor %}
+{% endblock %}

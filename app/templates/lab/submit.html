@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block title %}Submit Patient{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h2>Submit Patient Lab Values</h2>
+  <p>Enter the patient's clinical measurements — all fields are required</p>
+</div>
+
+<form method="POST" action="{{ url_for('lab.submit') }}">
+  <div class="card">
+    <div class="form-section-title">Patient Information</div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Patient Name</label>
+        <input type="text" name="patient_name" class="form-control" required placeholder="Full name">
+      </div>
+      <div class="form-group">
+        <label>Age (years)</label>
+        <input type="number" name="age" class="form-control" required
+               placeholder="e.g. 52" min="1" max="120" step="0.1">
+      </div>
+      <div class="form-group">
+        <label>Sex</label>
+        <select name="sex" class="form-control" required>
+          <option value="">Select...</option>
+          <option value="F">Female</option>
+          <option value="M">Male</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Disease Stage</label>
+        <select name="stage" class="form-control" required>
+          <option value="">Select stage...</option>
+          <option value="1">Stage 1 - Early</option>
+          <option value="2">Stage 2 - Moderate</option>
+          <option value="3">Stage 3 - Advanced</option>
+          <option value="4">Stage 4 - End-stage</option>
+        </select>
+        <span class="hint">Clinical disease stage assessed by physician</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="form-section-title">Laboratory Values</div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Bilirubin (mg/dL)</label>
+        <input type="number" name="bilirubin" class="form-control" required
+               placeholder="e.g. 2.3" step="0.01" min="0">
+        <span class="hint">Normal: 0.1–1.2 mg/dL</span>
+      </div>
+      <div class="form-group">
+        <label>Prothrombin Time (seconds)</label>
+        <input type="number" name="prothrombin" class="form-control" required
+               placeholder="e.g. 11.2" step="0.1" min="0">
+        <span class="hint">Normal: 9.4–12.5 seconds</span>
+      </div>
+      <div class="form-group">
+        <label>Copper (µg/day)</label>
+        <input type="number" name="copper" class="form-control" required
+               placeholder="e.g. 73" step="0.1" min="0">
+        <span class="hint">Normal: 20–50 µg/day</span>
+      </div>
+      <div class="form-group">
+        <label>SGOT / AST (U/mL)</label>
+        <input type="number" name="sgot" class="form-control" required
+               placeholder="e.g. 120" step="0.01" min="0">
+        <span class="hint">Normal: 10–40 U/mL</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="form-section-title">Clinical Observations</div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Hepatomegaly (enlarged liver)</label>
+        <select name="hepatomegaly" class="form-control" required>
+          <option value="">Select...</option>
+          <option value="0">No</option>
+          <option value="1">Yes</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Spider Angiomata</label>
+        <select name="spiders" class="form-control" required>
+          <option value="">Select...</option>
+          <option value="0">No</option>
+          <option value="1">Yes</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="flex gap-12">
+    <button type="submit" class="btn btn-primary" style="padding:12px 32px">
+      Submit & Run Prediction
+    </button>
+    <a href="{{ url_for('lab.lab_dashboard') }}" class="btn btn-secondary">Cancel</a>
+  </div>
+</form>
+{% endblock %}
